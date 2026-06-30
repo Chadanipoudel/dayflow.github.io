@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --card-bg: rgba(255,255,255,0.82);
+            --card-blur: blur(18px);
+            --card-border: rgba(255,255,255,0.6);
+            --text-primary: #1a1a2e;
+            --text-secondary: #555;
+            --text-muted: #aaa;
+            --input-bg: rgba(255,255,255,0.9);
+            --input-border: #dde0f0;
+            --item-bg: rgba(245,245,252,0.9);
+            --note-bg: rgba(248,248,255,0.95);
+            --accent: #667eea;
+            --accent-2: #764ba2;
+            --shadow: 0 8px 32px rgba(102,126,234,0.22);
+            --shadow-hover: 0 18px 50px rgba(102,126,234,0.38);
+            --success: #51cf66;
+            --warning: #ffa94d;
+            --danger: #ff6b6b;
+        }
+        [data-theme="dark"] {
+            --card-bg: rgba(18,18,38,0.85);
+            --card-border: rgba(255,255,255,0.08);
+            --text-primary: #e8e8f8;
+            --text-secondary: #aaa;
+            --text-muted: #555;
+            --input-bg: rgba(28,28,55,0.9);
+            --input-border: #3a3a60;
+            --item-bg: rgba(28,28,55,0.85);
+            --note-bg: rgba(22,22,48,0.95);
+            --shadow: 0 8px 32px rgba(0,0,0,0.55);
+            --shadow-hover: 0 18px 50px rgba(0,0,0,0.75);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 88px 20px 30px;
+            overflow-x: hidden;
+        }
+        /* Orbs */
+        .bg-orbs { position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0; }
+        .orb { position:absolute; border-radius:50%; filter:blur(80px); opacity:0.35; animation:floatOrb 14s ease-in-out infinite; }
+        .orb-1 { width:420px; height:420px; background:#a78bfa; top:-120px; left:-100px; }
+        .orb-2 { width:320px; height:320px; background:#60a5fa; top:40%; right:-80px; animation-delay:-5s; }
+        .orb-3 { width:360px; height:360px; background:#f472b6; bottom:-120px; left:30%; animation-delay:-10s; }
+        @keyframes floatOrb {
+            0%,100%{transform:translate(0,0) scale(1)}
+            33%    {transform:translate(30px,-35px) scale(1.06)}
+            66%    {transform:translate(-20px,20px) scale(0.94)}
+        }
+        /* Layout */
+        .container { width:100%; max-width:1200px; margin:0 auto; position:relative; z-index:1; }
+        .dashboard  { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr)); gap:22px; margin-bottom:22px; }
+
+        /* ── Fixed Header ── */
+        .top-bar {
+            position:fixed; top:0; left:0; right:0; z-index:200;
+            height:68px;
+            display:grid; grid-template-columns:1fr auto 1fr;
+            align-items:center;
+            padding:0 28px;
+            background:rgba(44,28,110,0.55);
+            backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+            border-bottom:1px solid rgba(255,255,255,0.13);
+            box-shadow:0 4px 30px rgba(0,0,0,0.2);
+            animation:fadeDown 0.5s ease;
+        }
+
+        /* Left — Brand */
+        .brand-wrap { display:flex; align-items:center; gap:11px; }
+        .logo-box {
+            width:40px; height:40px; border-radius:12px; flex-shrink:0;
+            background:linear-gradient(135deg,#a855f7,#6366f1);
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 4px 14px rgba(168,85,247,0.45);
+        }
+        .logo-box svg { width:22px; height:22px; }
+        .brand-text { display:flex; flex-direction:column; line-height:1.2; }
+        .brand-name { font-size:1.05rem; font-weight:700; color:white; letter-spacing:-0.2px; }
+        .brand-tag  { font-size:0.62rem; color:rgba(255,255,255,0.5); font-weight:400; letter-spacing:0.6px; text-transform:uppercase; }
+
+        /* Center — Greeting */
+        .greeting-wrap { display:flex; flex-direction:column; align-items:center; gap:2px; }
+        .greeting-row  { display:flex; align-items:center; gap:8px; }
+        .greet-hi  { font-size:0.95rem; font-weight:500; color:rgba(255,255,255,0.8); white-space:nowrap; }
+        .user-name {
+            font-size:0.95rem; font-weight:700; color:white;
+            background:none; border:none; border-bottom:1.5px dashed rgba(255,255,255,0.4);
+            font-family:'Poppins',sans-serif; cursor:text; padding:0 5px;
+            max-width:140px; transition:border-color 0.3s;
+        }
+        .user-name:focus { outline:none; border-bottom-color:rgba(255,255,255,0.9); }
+        .greeting-sub { font-size:0.7rem; color:rgba(255,255,255,0.48); font-weight:300; }
+
+        /* Right — Actions */
+        .header-actions { display:flex; gap:6px; align-items:center; justify-content:flex-end; }
+        .pill-btn {
+            background:rgba(255,255,255,0.13); border:1px solid rgba(255,255,255,0.22);
+            color:rgba(255,255,255,0.9); padding:6px 13px; border-radius:20px; cursor:pointer;
+            font-size:0.79rem; font-family:'Poppins',sans-serif; font-weight:500;
+            transition:all 0.25s; backdrop-filter:blur(8px);
+            text-decoration:none; display:inline-flex; align-items:center; gap:4px; white-space:nowrap;
+        }
+        .pill-btn:hover { background:rgba(255,255,255,0.26); transform:translateY(-1px); color:white; }
+        .pill-btn:active{ transform:translateY(0); }
+        /* Card */
+        .card {
+            background:var(--card-bg); backdrop-filter:var(--card-blur);
+            -webkit-backdrop-filter:var(--card-blur);
+            border:1px solid var(--card-border); border-radius:22px;
+            padding:24px; box-shadow:var(--shadow);
+            transition:transform 0.35s ease, box-shadow 0.35s ease;
+            position:relative; overflow:hidden;
+        }
+        .card::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:3px;
+            background:linear-gradient(90deg,var(--accent),var(--accent-2));
+            border-radius:22px 22px 0 0;
+        }
+        .card:hover { transform:translateY(-5px); box-shadow:var(--shadow-hover); }
+        .card:nth-child(1){animation:fadeUp 0.5s 0.05s ease both}
+        .card:nth-child(2){animation:fadeUp 0.5s 0.10s ease both}
+        .card:nth-child(3){animation:fadeUp 0.5s 0.15s ease both}
+        .card:nth-child(4){animation:fadeUp 0.5s 0.20s ease both}
+        .card:nth-child(5){animation:fadeUp 0.5s 0.25s ease both}
+        .card:nth-child(6){animation:fadeUp 0.5s 0.30s ease both}
+        .card:nth-child(7){animation:fadeUp 0.5s 0.35s ease both}
+        .card-title {
+            color:var(--accent); margin-bottom:16px; font-size:1rem; font-weight:600;
+            display:flex; align-items:center; justify-content:space-between;
+            padding-bottom:12px; border-bottom:1px solid rgba(102,126,234,0.15);
+        }
+        .card-title-l { display:flex; align-items:center; gap:8px; }
+        .card-meta { font-size:0.72rem; color:var(--text-muted); font-weight:400; }
+        /* Clock */
+        .clock-wrap { text-align:center; padding:4px 0 8px; }
+        .clock {
+            font-size:3rem; font-weight:700; color:var(--accent);
+            letter-spacing:4px; margin:8px 0;
+            text-shadow:0 0 40px rgba(102,126,234,0.28);
+        }
+        .clock .colon { animation:blink 1s step-start infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+        .date-str { color:var(--text-secondary); font-size:0.82rem; margin-top:4px; }
+        .time-badge {
+            display:inline-block; margin-top:10px;
+            background:linear-gradient(135deg,var(--accent),var(--accent-2));
+            color:white; padding:4px 18px; border-radius:20px;
+            font-size:0.78rem; font-weight:500;
+        }
+        /* Mini Calendar */
+        .mini-cal { margin-top:16px; }
+        .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+        .cal-month { font-size:0.86rem; font-weight:600; color:var(--text-primary); }
+        .cal-arrow {
+            background:none; border:none; color:var(--accent); cursor:pointer;
+            font-size:1.1rem; padding:2px 8px; border-radius:6px; transition:background 0.2s;
+        }
+        .cal-arrow:hover { background:rgba(102,126,234,0.1); }
+        .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; text-align:center; }
+        .cal-hd   { font-size:0.65rem; font-weight:600; color:var(--text-muted); padding:3px 0; }
+        .cal-day  { font-size:0.73rem; padding:5px 2px; border-radius:6px; color:var(--text-primary); cursor:pointer; transition:background 0.15s; }
+        .cal-day:hover      { background:rgba(102,126,234,0.1); }
+        .cal-day.today      { background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; font-weight:600; }
+        .cal-day.other-mo   { color:var(--text-muted); }
+        /* Pomodoro */
+        .pomo-modes { display:flex; gap:6px; justify-content:center; margin-bottom:14px; }
+        .pomo-mode-btn {
+            padding:5px 12px; border-radius:20px; border:1.5px solid var(--input-border);
+            background:none; color:var(--text-secondary); font-size:0.74rem;
+            font-family:'Poppins',sans-serif; cursor:pointer; font-weight:500; transition:all 0.25s;
+        }
+        .pomo-mode-btn.active {
+            background:linear-gradient(135deg,var(--accent),var(--accent-2));
+            border-color:transparent; color:white;
+        }
+        .pomo-ring-wrap { display:flex; justify-content:center; position:relative; margin:4px 0 14px; }
+        .pomo-ring-wrap svg { transform:rotate(-90deg); }
+        .pomo-ring-bg   { fill:none; stroke:rgba(102,126,234,0.12); stroke-width:9; }
+        .pomo-ring-fill { fill:none; stroke:url(#pomoGrad); stroke-width:9; stroke-linecap:round; transition:stroke-dashoffset 1s linear; }
+        .pomo-center {
+            position:absolute; inset:0;
+            display:flex; flex-direction:column; align-items:center; justify-content:center;
+        }
+        .pomo-time  { font-size:2.2rem; font-weight:700; color:var(--accent); line-height:1; font-variant-numeric:tabular-nums; }
+        .pomo-lbl   { font-size:0.7rem; color:var(--text-secondary); font-weight:500; margin-top:3px; }
+        .pomo-ctrl  { display:flex; gap:10px; justify-content:center; }
+        .pomo-start {
+            flex:1; padding:9px 0; border:none; border-radius:10px; cursor:pointer;
+            background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white;
+            font-family:'Poppins',sans-serif; font-size:0.88rem; font-weight:600;
+            transition:opacity 0.2s, transform 0.15s;
+        }
+        .pomo-start:hover { opacity:0.88; transform:scale(1.02); }
+        .pomo-reset {
+            padding:9px 18px; border:1.5px solid var(--input-border); border-radius:10px;
+            background:var(--item-bg); color:var(--text-secondary);
+            font-family:'Poppins',sans-serif; font-size:0.88rem; font-weight:600;
+            cursor:pointer; transition:background 0.2s;
+        }
+        .pomo-reset:hover { background:rgba(102,126,234,0.1); }
+        .pomo-dots { display:flex; justify-content:center; gap:7px; margin-top:13px; }
+        .s-dot { width:11px; height:11px; border-radius:50%; border:2px solid var(--accent); transition:background 0.3s; }
+        .s-dot.done { background:var(--accent); }
+        /* Inputs */
+        .input-row   { display:flex; gap:8px; margin-bottom:9px; }
+        .text-input, .priority-sel, .notes-ta, .due-inp, .search-inp {
+            font-family:'Poppins',sans-serif; background:var(--input-bg);
+            color:var(--text-primary); border:2px solid var(--input-border);
+            border-radius:10px; font-size:0.85rem;
+            transition:border-color 0.3s, box-shadow 0.3s;
+        }
+        .text-input  { flex:1; padding:9px 13px; }
+        .due-inp     { padding:9px 10px; }
+        .priority-sel{ padding:9px 10px; cursor:pointer; }
+        .notes-ta    { width:100%; padding:11px; resize:vertical; min-height:80px; margin-bottom:5px; }
+        .search-inp  { width:100%; padding:8px 12px 8px 34px; }
+        .text-input:focus,.priority-sel:focus,.notes-ta:focus,.due-inp:focus,.search-inp:focus {
+            outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(102,126,234,0.13);
+        }
+        .search-wrap { position:relative; margin-bottom:10px; }
+        .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); font-size:0.82rem; color:var(--text-muted); pointer-events:none; }
+        .wc { font-size:0.7rem; color:var(--text-muted); text-align:right; margin-bottom:8px; }
+        .btn { padding:9px 15px; background:linear-gradient(135deg,var(--accent),var(--accent-2)); color:white; border:none; border-radius:10px; cursor:pointer; font-weight:600; font-family:'Poppins',sans-serif; font-size:0.85rem; transition:opacity 0.2s, transform 0.15s; white-space:nowrap; }
+        .btn:hover  { opacity:0.88; transform:scale(1.02); }
+        .btn:active { transform:scale(0.97); }
+        .btn-full { width:100%; }
+        /* Filter row */
+        .filter-row { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+        .f-btn {
+            padding:4px 11px; border-radius:20px; border:1.5px solid var(--input-border);
+            background:none; color:var(--text-secondary); font-size:0.73rem;
+            font-family:'Poppins',sans-serif; cursor:pointer; font-weight:500; transition:all 0.2s;
+        }
+        .f-btn.active { background:linear-gradient(135deg,var(--accent),var(--accent-2)); border-color:transparent; color:white; }
+        /* Todo list */
+        .todo-list,.notes-list { list-style:none; max-height:240px; overflow-y:auto; padding-right:2px; }
+        .todo-list::-webkit-scrollbar,.notes-list::-webkit-scrollbar { width:4px; }
+        .todo-list::-webkit-scrollbar-thumb,.notes-list::-webkit-scrollbar-thumb { background:var(--accent); border-radius:4px; }
+        .todo-item {
+            display:flex; align-items:flex-start; gap:9px; padding:10px 12px;
+            background:var(--item-bg); margin-bottom:7px; border-radius:10px;
+            border-left:3px solid transparent; animation:slideIn 0.22s ease; transition:opacity 0.3s;
+        }
+        .todo-item.pr-high   { border-left-color:var(--danger); }
+        .todo-item.pr-medium { border-left-color:var(--warning); }
+        .todo-item.pr-low    { border-left-color:var(--success); }
+        .todo-item.done-item { opacity:0.5; }
+        .todo-item.done-item .todo-txt { text-decoration:line-through; color:var(--text-muted); }
+        .cbox {
+            width:19px; height:19px; border:2px solid var(--accent); border-radius:5px;
+            cursor:pointer; flex-shrink:0; display:flex; align-items:center;
+            justify-content:center; font-size:11px; color:white; margin-top:2px;
+            transition:background 0.2s;
+        }
+        .cbox.on { background:var(--accent); }
+        .todo-info { flex:1; min-width:0; }
+        .todo-txt  { color:var(--text-primary); font-size:0.85rem; line-height:1.4; word-break:break-word; }
+        .due-tag   { font-size:0.7rem; color:var(--text-muted); margin-top:2px; }
+        .due-tag.late { color:var(--danger); font-weight:600; }
+        .todo-r    { display:flex; align-items:center; gap:5px; flex-shrink:0; }
+        .badge     { font-size:0.65rem; font-weight:600; padding:2px 7px; border-radius:10px; text-transform:uppercase; letter-spacing:0.4px; }
+        .b-high    { background:rgba(255,107,107,0.15); color:#e03131; }
+        .b-medium  { background:rgba(255,169,77,0.15);  color:#d9730d; }
+        .b-low     { background:rgba(81,207,102,0.15);  color:#2f9e44; }
+        .icon-btn  { background:none; border:none; cursor:pointer; font-size:0.9rem; color:#ff6b6b; padding:3px 5px; border-radius:5px; transition:background 0.2s, transform 0.15s; line-height:1; }
+        .icon-btn:hover { background:rgba(255,107,107,0.12); transform:scale(1.2); }
+        /* Notes */
+        .color-strip { display:flex; gap:7px; margin-bottom:10px; }
+        .cdot { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; transition:transform 0.2s, box-shadow 0.2s; }
+        .cdot.on  { border-color:white; box-shadow:0 0 0 2px var(--accent); }
+        .cdot:hover { transform:scale(1.2); }
+        .note-item {
+            background:var(--note-bg); padding:11px 13px; margin-bottom:8px;
+            border-left:4px solid var(--accent); border-radius:8px;
+            display:flex; justify-content:space-between; align-items:flex-start;
+            gap:8px; animation:slideIn 0.22s ease;
+        }
+        .note-txt  { flex:1; color:var(--text-primary); font-size:0.83rem; line-height:1.5; word-break:break-word; }
+        .note-date { font-size:0.69rem; color:var(--text-muted); margin-top:3px; }
+        /* Habits */
+        .habit-item {
+            display:flex; align-items:center; gap:9px; padding:10px 12px;
+            background:var(--item-bg); border-radius:10px; margin-bottom:8px;
+            animation:slideIn 0.22s ease;
+        }
+        .hcbox {
+            width:22px; height:22px; border:2px solid var(--accent); border-radius:50%;
+            cursor:pointer; display:flex; align-items:center; justify-content:center;
+            font-size:12px; color:white; flex-shrink:0; transition:all 0.2s;
+        }
+        .hcbox.on { background:var(--success); border-color:var(--success); }
+        .habit-name { flex:1; font-size:0.85rem; color:var(--text-primary); }
+        .habit-name.done { text-decoration:line-through; color:var(--text-muted); }
+        .week-dots { display:flex; gap:3px; }
+        .wd { width:8px; height:8px; border-radius:50%; background:rgba(102,126,234,0.14); }
+        .wd.on { background:var(--accent); }
+        .streak-b { font-size:0.71rem; font-weight:600; color:var(--warning); background:rgba(255,169,77,0.12); padding:2px 7px; border-radius:10px; }
+        .habit-prog-track { width:100%; height:7px; background:rgba(102,126,234,0.12); border-radius:7px; overflow:hidden; margin-top:14px; }
+        .habit-prog-fill  { height:100%; background:linear-gradient(90deg,var(--success),var(--accent)); border-radius:7px; transition:width 0.7s ease; }
+        .habit-foot { display:flex; justify-content:space-between; font-size:0.73rem; color:var(--text-secondary); margin-top:5px; }
+        /* Stats */
+        .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+        .stat-item {
+            text-align:center; padding:14px 10px;
+            background:linear-gradient(135deg,rgba(102,126,234,0.1),rgba(118,75,162,0.1));
+            border:1px solid rgba(102,126,234,0.18); border-radius:12px; transition:transform 0.2s;
+        }
+        .stat-item:hover { transform:scale(1.04); }
+        .stat-num { font-size:1.85rem; font-weight:700; color:var(--accent); margin-bottom:3px; }
+        .stat-lbl { font-size:0.72rem; color:var(--text-secondary); font-weight:500; }
+        .prog-row  { display:flex; justify-content:space-between; font-size:0.77rem; color:var(--text-secondary); margin-bottom:5px; font-weight:500; }
+        .prog-track{ width:100%; height:9px; background:rgba(102,126,234,0.12); border-radius:10px; overflow:hidden; margin-bottom:14px; }
+        .prog-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); border-radius:10px; transition:width 0.9s cubic-bezier(0.4,0,0.2,1); }
+        .mood-lbl  { font-size:0.77rem; color:var(--text-secondary); margin-bottom:8px; font-weight:500; }
+        .mood-row  { display:flex; gap:8px; justify-content:center; }
+        .mood-btn  { font-size:1.4rem; background:none; border:2px solid transparent; border-radius:10px; cursor:pointer; padding:5px 8px; transition:all 0.2s; line-height:1; }
+        .mood-btn:hover  { background:rgba(102,126,234,0.1); border-color:rgba(102,126,234,0.2); transform:scale(1.15); }
+        .mood-btn.sel    { border-color:var(--accent); background:rgba(102,126,234,0.12); transform:scale(1.1); }
+        /* Quote */
+        .qcat-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; justify-content:center; }
+        .qcat-btn {
+            padding:3px 11px; border-radius:20px; border:1.5px solid var(--input-border);
+            background:none; color:var(--text-secondary); font-size:0.72rem;
+            font-family:'Poppins',sans-serif; cursor:pointer; transition:all 0.2s;
+        }
+        .qcat-btn.active { background:var(--accent); border-color:var(--accent); color:white; }
+        .quote-body { font-size:1rem; color:var(--text-primary); font-style:italic; line-height:1.75; text-align:center; padding:8px 0; font-weight:300; transition:opacity 0.4s; }
+        .quote-auth { text-align:right; color:var(--accent); font-size:0.83rem; font-weight:600; margin-top:8px; transition:opacity 0.4s; }
+        .quote-btn  { display:block; margin:14px auto 0; background:none; border:2px solid var(--accent); color:var(--accent); padding:6px 20px; border-radius:22px; cursor:pointer; font-family:'Poppins',sans-serif; font-size:0.82rem; font-weight:500; transition:all 0.28s; }
+        .quote-btn:hover { background:var(--accent); color:white; }
+        /* Footer */
+        footer { text-align:center; color:rgba(255,255,255,0.7); margin-top:28px; font-size:0.82rem; animation:fadeUp 0.6s 0.5s ease both; }
+        .kbd { display:inline-block; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); border-radius:4px; padding:1px 5px; font-size:0.73rem; }
+        .empty-msg { text-align:center; color:var(--text-muted); padding:14px; font-style:italic; font-size:0.82rem; }
+        /* Animations */
+        @keyframes fadeDown { from{opacity:0;transform:translateY(-20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeUp   { from{opacity:0;transform:translateY(22px)}  to{opacity:1;transform:translateY(0)} }
+        @keyframes slideIn  { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+        @keyframes shake    { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 60%{transform:translateX(6px)} 80%{transform:translateX(-3px)} }
+        * { scrollbar-width:thin; scrollbar-color:#667eea transparent; }
+        @media (max-width:900px) {
+            .top-bar { grid-template-columns:auto 1fr; grid-template-rows:auto auto; height:auto; padding:10px 16px; gap:8px; }
+            .header-actions { grid-column:1/-1; justify-content:center; flex-wrap:wrap; gap:5px; }
+            .greeting-wrap { align-items:flex-start; }
+            body { padding-top:116px; }
+        }
+        @media (max-width:640px) {
+            .mob-hide { display:none !important; }
+            .pill-btn { padding:6px 10px; font-size:0.76rem; }
+            body { padding-bottom:calc(62px + env(safe-area-inset-bottom)); }
+        }
+        @media (max-width:600px) {
+            .dashboard { grid-template-columns:1fr; gap:14px; }
+            .clock { font-size:2.2rem; }
+            .brand-tag { display:none; }
+            body { padding-top:124px; }
+        }
+        @media (max-width:480px) {
+            .top-bar { height:54px !important; grid-template-rows:1fr !important; padding:0 14px !important; gap:0 !important; }
+            .header-actions { display:none !important; }
+            .greeting-wrap { align-items:center; }
+            .greeting-sub { display:none; }
+            .greet-hi { font-size:0.82rem; }
+            body { padding-top:58px !important; }
+        }
+        /* ── MOBILE BOTTOM NAV ── */
+        .mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:500;height:58px;background:rgba(20,12,55,0.97);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,0.13);justify-content:space-around;align-items:center;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -4px 24px rgba(0,0,0,0.3)}
+        .mni{display:flex;flex-direction:column;align-items:center;gap:1px;color:rgba(255,255,255,.5);text-decoration:none;font-size:1.3rem;padding:5px 8px;border-radius:10px;transition:all .2s;min-width:54px;text-align:center;-webkit-tap-highlight-color:transparent}
+        .mni span{font-size:.6rem;font-family:'Poppins',sans-serif;font-weight:500;letter-spacing:.3px}
+        .mni.active{color:#fff;background:rgba(255,255,255,.18)}
+        @media(max-width:640px){.mob-nav{display:flex}}
+    </style>
+</head>
+<body>
+<div class="bg-orbs">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+</div>
+
+<div class="top-bar">
+
+    <!-- Left: Brand -->
+    <div class="brand-wrap">
+        <div class="logo-box">
+            <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="2" y="13" width="4" height="7" rx="1.5" fill="white" opacity="0.7"/>
+                <rect x="9" y="8"  width="4" height="12" rx="1.5" fill="white"/>
+                <rect x="16" y="3" width="4" height="17" rx="1.5" fill="white" opacity="0.7"/>
+                <circle cx="18" cy="2.5" r="2" fill="white"/>
+                <path d="M3 10 Q11 3 19 3" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.35"/>
+            </svg>
+        </div>
+        <div class="brand-text">
+            <span class="brand-name">DayFlow</span>
+            <span class="brand-tag">Personal Dashboard</span>
+        </div>
+    </div>
+
+    <!-- Center: Greeting -->
+    <div class="greeting-wrap">
+        <div class="greeting-row">
+            <span class="greet-hi">👋 Hello,</span>
+            <input class="user-name" id="userName" type="text" value="Friend" maxlength="20" title="Click to edit your name">
+        </div>
+        <span class="greeting-sub" id="greeting"></span>
+    </div>
+
+    <!-- Right: Actions -->
+    <div class="header-actions">
+        <button class="pill-btn" onclick="exportData()">📤 Export</button>
+        <a href="social.html" class="pill-btn mob-hide">🌐 Social</a>
+        <a href="page2.html" class="pill-btn mob-hide">⚡ Advanced</a>
+        <a href="page3.html" class="pill-btn mob-hide">🏥 Health</a>
+        <a href="profile.html" class="pill-btn mob-hide">👤 Profile</a>
+        <button class="pill-btn" id="darkBtn" onclick="toggleDark()">🌙 Dark</button>
+        <button class="pill-btn" onclick="logout()">🚪 Out</button>
+    </div>
+
+</div>
+
+<div class="container">
+
+    <div class="dashboard">
+
+        <!-- Clock + Calendar -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-l">⏰ Current Time</div>
+                <span class="card-meta" id="timeBadge">Morning ☀️</span>
+            </div>
+            <div class="clock-wrap">
+                <div class="clock">
+                    <span id="ch">00</span><span class="colon">:</span><span id="cm">00</span><span class="colon">:</span><span id="cs">00</span>
+                </div>
+                <div class="date-str" id="dateStr"></div>
+            </div>
+            <div class="mini-cal">
+                <div class="cal-nav">
+                    <button class="cal-arrow" onclick="shiftCal(-1)">‹</button>
+                    <span class="cal-month" id="calMonth"></span>
+                    <button class="cal-arrow" onclick="shiftCal(1)">›</button>
+                </div>
+                <div class="cal-grid" id="calGrid"></div>
+            </div>
+        </div>
+
+        <!-- Pomodoro -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-l">🍅 Pomodoro Timer</div>
+                <span class="card-meta" id="pomoSessLbl">Session 1 / 4</span>
+            </div>
+            <div class="pomo-modes">
+                <button class="pomo-mode-btn active" onclick="setPomoMode('work',25,this)">Work</button>
+                <button class="pomo-mode-btn" onclick="setPomoMode('short',5,this)">Short Break</button>
+                <button class="pomo-mode-btn" onclick="setPomoMode('long',15,this)">Long Break</button>
+            </div>
+            <div class="pomo-ring-wrap">
+                <svg width="160" height="160" viewBox="0 0 160 160">
+                    <defs>
+                        <linearGradient id="pomoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea"/>
+                            <stop offset="100%" style="stop-color:#764ba2"/>
+                        </linearGradient>
+                    </defs>
+                    <circle class="pomo-ring-bg" cx="80" cy="80" r="70"/>
+                    <circle class="pomo-ring-fill" id="pomoRing" cx="80" cy="80" r="70"
+                        stroke-dasharray="439.82" stroke-dashoffset="0"/>
+                </svg>
+                <div class="pomo-center">
+                    <div class="pomo-time" id="pomoTime">25:00</div>
+                    <div class="pomo-lbl"  id="pomoLbl">Focus Time</div>
+                </div>
+            </div>
+            <div class="pomo-ctrl">
+                <button class="pomo-start" id="pomoBtn" onclick="togglePomo()">▶ Start</button>
+                <button class="pomo-reset" onclick="resetPomo()">↺ Reset</button>
+            </div>
+            <div class="pomo-dots" id="pomoDots">
+                <div class="s-dot"></div><div class="s-dot"></div>
+                <div class="s-dot"></div><div class="s-dot"></div>
+            </div>
+        </div>
+
+        <!-- To-Do -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-l">✅ To-Do List</div>
+                <button class="icon-btn" style="color:var(--text-muted)" onclick="clearDone()" title="Clear completed">🗑️</button>
+            </div>
+            <div class="input-row">
+                <input class="text-input" type="text" id="todoInput" placeholder="New task…" autocomplete="off">
+                <select class="priority-sel" id="priSel">
+                    <option value="medium">⚡ Med</option>
+                    <option value="high">🔴 High</option>
+                    <option value="low">🟢 Low</option>
+                </select>
+            </div>
+            <div class="input-row">
+                <input class="text-input due-inp" type="date" id="dueDate" title="Due date (optional)" style="flex:1">
+                <button class="btn" onclick="addTodo()">+ Add</button>
+            </div>
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input class="search-inp" id="todoSearch" type="text" placeholder="Search tasks…" oninput="renderTodos()">
+            </div>
+            <div class="filter-row">
+                <button class="f-btn active" data-f="all"     onclick="setFilter(this)">All</button>
+                <button class="f-btn" data-f="active"         onclick="setFilter(this)">Active</button>
+                <button class="f-btn" data-f="done"           onclick="setFilter(this)">Done</button>
+                <button class="f-btn" data-f="high"           onclick="setFilter(this)">🔴 High</button>
+                <button class="f-btn" data-f="overdue"        onclick="setFilter(this)">⚠️ Overdue</button>
+            </div>
+            <ul class="todo-list" id="todoList"></ul>
+            <div id="emptyTodo" class="empty-msg">No tasks yet. Add one above!</div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-l">📝 Quick Notes</div>
+                <span class="card-meta" id="noteMeta">0 notes</span>
+            </div>
+            <div class="color-strip">
+                <div class="cdot on"  style="background:#667eea" data-c="#667eea" onclick="pickC(this)"></div>
+                <div class="cdot"     style="background:#ff6b6b" data-c="#ff6b6b" onclick="pickC(this)"></div>
+                <div class="cdot"     style="background:#51cf66" data-c="#51cf66" onclick="pickC(this)"></div>
+                <div class="cdot"     style="background:#ffa94d" data-c="#ffa94d" onclick="pickC(this)"></div>
+                <div class="cdot"     style="background:#cc5de8" data-c="#cc5de8" onclick="pickC(this)"></div>
+                <div class="cdot"     style="background:#20c997" data-c="#20c997" onclick="pickC(this)"></div>
+            </div>
+            <textarea class="notes-ta" id="noteInput" placeholder="Write a quick note… (Ctrl+Enter to save)" oninput="updateWC()"></textarea>
+            <div class="wc" id="wc">0 words · 0 chars</div>
+            <button class="btn btn-full" onclick="addNote()">Save Note</button>
+            <div class="search-wrap" style="margin-top:12px">
+                <span class="search-icon">🔍</span>
+                <input class="search-inp" id="noteSearch" type="text" placeholder="Search notes…" oninput="renderNotes()">
+            </div>
+            <ul class="notes-list" id="notesList"></ul>
+            <div id="emptyNotes" class="empty-msg">No notes yet. Create one!</div>
+        </div>
+
+        <!-- Habit Tracker -->
+        <div class="card">
+            <div class="card-title">
+                <div class="card-title-l">🔥 Habit Tracker</div>
+                <span class="card-meta" id="habitDayLbl"></span>
+            </div>
+            <div class="input-row">
+                <input class="text-input" type="text" id="habitInput" placeholder="Add a new habit…" autocomplete="off">
+                <button class="btn" onclick="addHabit()">+ Add</button>
+            </div>
+            <div id="habitList"></div>
+            <div id="emptyHabits" class="empty-msg">No habits yet. Add one above!</div>
+            <div class="habit-prog-track"><div class="habit-prog-fill" id="hpFill" style="width:0%"></div></div>
+            <div class="habit-foot">
+                <span id="hDoneLbl">0 / 0 done today</span>
+                <span id="hBestLbl">Best streak: 0 🔥</span>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+            <div class="card-title"><div class="card-title-l">📈 Today's Stats</div></div>
+            <div class="stats-grid">
+                <div class="stat-item"><div class="stat-num" id="sDone">0</div><div class="stat-lbl">Completed</div></div>
+                <div class="stat-item"><div class="stat-num" id="sTotal">0</div><div class="stat-lbl">Total Tasks</div></div>
+                <div class="stat-item"><div class="stat-num" id="sNotes">0</div><div class="stat-lbl">Notes</div></div>
+                <div class="stat-item"><div class="stat-num" id="sProd">0%</div><div class="stat-lbl">Productivity</div></div>
+            </div>
+            <div class="prog-row"><span>Task Progress</span><span id="progPct">0%</span></div>
+            <div class="prog-track"><div class="prog-fill" id="progBar" style="width:0%"></div></div>
+            <div class="mood-lbl">How are you feeling today?</div>
+            <div class="mood-row">
+                <button class="mood-btn" data-m="😄" onclick="setMood(this)" title="Great">😄</button>
+                <button class="mood-btn" data-m="🙂" onclick="setMood(this)" title="Good">🙂</button>
+                <button class="mood-btn" data-m="😐" onclick="setMood(this)" title="Okay">😐</button>
+                <button class="mood-btn" data-m="😔" onclick="setMood(this)" title="Down">😔</button>
+                <button class="mood-btn" data-m="😤" onclick="setMood(this)" title="Stressed">😤</button>
+            </div>
+        </div>
+
+        <!-- Quote -->
+        <div class="card">
+            <div class="card-title"><div class="card-title-l">💡 Quote of the Day</div></div>
+            <div class="qcat-row">
+                <button class="qcat-btn active" data-cat="all"          onclick="setQCat(this)">All</button>
+                <button class="qcat-btn"         data-cat="productivity" onclick="setQCat(this)">Productivity</button>
+                <button class="qcat-btn"         data-cat="motivation"   onclick="setQCat(this)">Motivation</button>
+                <button class="qcat-btn"         data-cat="wisdom"       onclick="setQCat(this)">Wisdom</button>
+            </div>
+            <div class="quote-body" id="quoteText"></div>
+            <div class="quote-auth" id="quoteAuth"></div>
+            <button class="quote-btn" onclick="nextQuote()">✦ New Quote</button>
+        </div>
+
+    </div>
+    <footer>
+        <p><span class="kbd">Enter</span> add task &nbsp;·&nbsp; <span class="kbd">Ctrl+Enter</span> save note &nbsp;·&nbsp; <span class="kbd">Space</span> start/pause timer &nbsp;·&nbsp; Made with ❤️</p>
+    </footer>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════ */
+const QUOTES = [
+    {t:"The secret of getting ahead is getting started.",       a:"Mark Twain",          c:"productivity"},
+    {t:"Focus on being productive instead of busy.",            a:"Tim Ferriss",          c:"productivity"},
+    {t:"Either you run the day, or the day runs you.",          a:"Jim Rohn",             c:"productivity"},
+    {t:"Don't watch the clock; do what it does. Keep going.",   a:"Sam Levenson",         c:"productivity"},
+    {t:"Productivity is never an accident. It is the result of commitment to excellence.", a:"Paul J. Meyer", c:"productivity"},
+    {t:"Believe you can and you're halfway there.",             a:"Theodore Roosevelt",   c:"motivation"},
+    {t:"You don't have to be great to start, but you have to start to be great.", a:"Zig Ziglar", c:"motivation"},
+    {t:"The way to get started is to quit talking and begin doing.", a:"Walt Disney",      c:"motivation"},
+    {t:"Energy and persistence conquer all things.",            a:"Benjamin Franklin",    c:"motivation"},
+    {t:"It always seems impossible until it's done.",           a:"Nelson Mandela",       c:"motivation"},
+    {t:"Start where you are. Use what you have. Do what you can.", a:"Arthur Ashe",       c:"motivation"},
+    {t:"It does not matter how slowly you go as long as you do not stop.", a:"Confucius", c:"wisdom"},
+    {t:"Success is not final, failure is not fatal: it is the courage to continue that counts.", a:"Winston Churchill", c:"wisdom"},
+    {t:"The only way to do great work is to love what you do.", a:"Steve Jobs",           c:"wisdom"},
+    {t:"In the middle of every difficulty lies opportunity.",   a:"Albert Einstein",      c:"wisdom"},
+    {t:"An investment in knowledge pays the best interest.",    a:"Benjamin Franklin",    c:"wisdom"},
+    {t:"The future belongs to those who believe in the beauty of their dreams.", a:"Eleanor Roosevelt", c:"wisdom"},
+    {t:"Life is what happens when you're busy making other plans.", a:"John Lennon",      c:"wisdom"},
+];
+
+const DEFAULT_HABITS = [
+    "Drink 8 glasses of water",
+    "Exercise 30 minutes",
+    "Read 20 pages",
+    "Meditate 10 minutes",
+    "No social media before 10am",
+];
+
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let noteColor    = '#667eea';
+let lastQIdx     = -1;
+let qCat         = 'all';
+let todoFilter   = 'all';
+let calOffset    = 0;
+let pomoRunning  = false;
+let pomoInterval = null;
+let pomoMode     = 'work';
+let pomoSecs     = 25 * 60;
+let pomoTotal    = 25 * 60;
+let pomoSession  = 0;
+const CIRC       = 2 * Math.PI * 70;  // 439.82
+
+/* ═══════════════════════════════════════════════
+   BOOT
+═══════════════════════════════════════════════ */
+loadTheme();
+loadUserName();
+setGreeting();
+updateClock();
+setInterval(updateClock, 1000);
+renderCalendar();
+renderTodos();
+renderNotes();
+initHabits();
+updateStats();
+nextQuote();
+loadMood();
+updatePomoRing();
+
+/* ═══════════════════════════════════════════════
+   CLOCK
+═══════════════════════════════════════════════ */
+function updateClock() {
+    const now = new Date();
+    document.getElementById('ch').textContent = pad(now.getHours());
+    document.getElementById('cm').textContent = pad(now.getMinutes());
+    document.getElementById('cs').textContent = pad(now.getSeconds());
+    document.getElementById('dateStr').textContent =
+        now.toLocaleDateString('en-US', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    const h = now.getHours();
+    document.getElementById('timeBadge').textContent =
+        h<5?'Night 🌙':h<12?'Morning ☀️':h<17?'Afternoon 🌤️':h<21?'Evening 🌅':'Night 🌙';
+    document.getElementById('habitDayLbl').textContent =
+        now.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+}
+function pad(n) { return String(n).padStart(2,'0'); }
+
+/* ═══════════════════════════════════════════════
+   CALENDAR
+═══════════════════════════════════════════════ */
+function renderCalendar() {
+    const today = new Date();
+    const view  = new Date(today.getFullYear(), today.getMonth() + calOffset, 1);
+    const yr = view.getFullYear(), mo = view.getMonth();
+    document.getElementById('calMonth').textContent =
+        view.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    const firstDay = new Date(yr,mo,1).getDay();
+    const daysIn   = new Date(yr,mo+1,0).getDate();
+    const prevDays = new Date(yr,mo,0).getDate();
+    const DH = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    let h = DH.map(d=>`<div class="cal-hd">${d}</div>`).join('');
+    for (let i=firstDay-1; i>=0; i--) h += `<div class="cal-day other-mo">${prevDays-i}</div>`;
+    for (let d=1; d<=daysIn; d++) {
+        const isTd = calOffset===0 && d===today.getDate();
+        h += `<div class="cal-day${isTd?' today':''}">${d}</div>`;
+    }
+    const rem = (7-((firstDay+daysIn)%7))%7;
+    for (let d=1; d<=rem; d++) h += `<div class="cal-day other-mo">${d}</div>`;
+    document.getElementById('calGrid').innerHTML = h;
+}
+function shiftCal(d) { calOffset += d; renderCalendar(); }
+
+/* ═══════════════════════════════════════════════
+   POMODORO
+═══════════════════════════════════════════════ */
+const POMO_CFG = {
+    work:  {mins:25, lbl:'Focus Time'},
+    short: {mins:5,  lbl:'Short Break'},
+    long:  {mins:15, lbl:'Long Break'},
+};
+
+function setPomoMode(mode,mins,btn) {
+    resetPomo();
+    pomoMode = mode; pomoSecs = mins*60; pomoTotal = mins*60;
+    document.getElementById('pomoLbl').textContent = POMO_CFG[mode].lbl;
+    document.querySelectorAll('.pomo-mode-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    updatePomoDisplay(); updatePomoRing();
+}
+
+function togglePomo() {
+    if (pomoRunning) {
+        clearInterval(pomoInterval); pomoRunning = false;
+        document.getElementById('pomoBtn').textContent = '▶ Resume';
+    } else {
+        pomoRunning = true;
+        document.getElementById('pomoBtn').textContent = '⏸ Pause';
+        pomoInterval = setInterval(() => {
+            if (pomoSecs <= 0) {
+                clearInterval(pomoInterval); pomoRunning = false;
+                document.getElementById('pomoBtn').textContent = '▶ Start';
+                if (pomoMode === 'work') {
+                    pomoSession = (pomoSession + 1) % 4;
+                    renderPomoDots();
+                }
+                pomoSecs = pomoTotal;
+                beep();
+            } else { pomoSecs--; }
+            updatePomoDisplay(); updatePomoRing();
+        }, 1000);
+    }
+}
+
+function resetPomo() {
+    clearInterval(pomoInterval); pomoRunning = false; pomoSecs = pomoTotal;
+    document.getElementById('pomoBtn').textContent = '▶ Start';
+    updatePomoDisplay(); updatePomoRing();
+}
+
+function updatePomoDisplay() {
+    const m = Math.floor(pomoSecs/60), s = pomoSecs%60;
+    document.getElementById('pomoTime').textContent = `${pad(m)}:${pad(s)}`;
+    document.getElementById('pomoSessLbl').textContent = `Session ${pomoSession+1} / 4`;
+}
+
+function updatePomoRing() {
+    document.getElementById('pomoRing').style.strokeDashoffset = CIRC*(1-pomoSecs/pomoTotal);
+}
+
+function renderPomoDots() {
+    document.querySelectorAll('#pomoDots .s-dot').forEach((d,i)=>d.classList.toggle('done',i<pomoSession));
+}
+
+function beep() {
+    try {
+        const ctx = new (window.AudioContext||window.webkitAudioContext)();
+        const osc = ctx.createOscillator(), g = ctx.createGain();
+        osc.connect(g); g.connect(ctx.destination);
+        osc.frequency.value = 880; osc.type = 'sine';
+        g.gain.setValueAtTime(0.3, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime+0.6);
+        osc.start(ctx.currentTime); osc.stop(ctx.currentTime+0.6);
+    } catch(e) {}
+}
+
+/* ═══════════════════════════════════════════════
+   TO-DO
+═══════════════════════════════════════════════ */
+function addTodo() {
+    const inp = document.getElementById('todoInput');
+    const txt = inp.value.trim();
+    if (!txt) { shake(inp); return; }
+    const todos = getTodos();
+    todos.push({
+        id: Date.now(), text: txt, done: false,
+        priority: document.getElementById('priSel').value,
+        due: document.getElementById('dueDate').value || null,
+    });
+    saveTodos(todos);
+    inp.value = '';
+    document.getElementById('dueDate').value = '';
+    renderTodos(); updateStats();
+}
+
+function delTodo(id)  { saveTodos(getTodos().filter(t=>t.id!==id)); renderTodos(); updateStats(); }
+function clearDone()  { saveTodos(getTodos().filter(t=>!t.done));   renderTodos(); updateStats(); }
+
+function togTodo(id) {
+    const todos = getTodos(), item = todos.find(t=>t.id===id);
+    if (item) { item.done = !item.done; saveTodos(todos); renderTodos(); updateStats(); }
+}
+
+function setFilter(btn) {
+    document.querySelectorAll('.f-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); todoFilter = btn.dataset.f; renderTodos();
+}
+
+function renderTodos() {
+    const list  = document.getElementById('todoList');
+    const empty = document.getElementById('emptyTodo');
+    const q     = document.getElementById('todoSearch').value.toLowerCase();
+    const today = new Date().toISOString().split('T')[0];
+    let todos   = getTodos();
+    if (q) todos = todos.filter(t=>t.text.toLowerCase().includes(q));
+    if (todoFilter==='active')  todos = todos.filter(t=>!t.done);
+    if (todoFilter==='done')    todos = todos.filter(t=>t.done);
+    if (todoFilter==='high')    todos = todos.filter(t=>t.priority==='high');
+    if (todoFilter==='overdue') todos = todos.filter(t=>t.due&&t.due<today&&!t.done);
+    list.innerHTML = '';
+    empty.style.display = todos.length?'none':'block';
+    todos.forEach(t => {
+        const late = t.due && t.due < today && !t.done;
+        const li   = document.createElement('li');
+        li.className = `todo-item pr-${t.priority||'medium'} ${t.done?'done-item':''}`;
+        li.innerHTML = `
+            <div class="cbox ${t.done?'on':''}" onclick="togTodo(${t.id})">${t.done?'✓':''}</div>
+            <div class="todo-info">
+                <div class="todo-txt">${esc(t.text)}</div>
+                ${t.due?`<div class="due-tag${late?' late':''}">${late?'⚠️ Overdue · ':'📅 '}${fmtDate(t.due)}</div>`:''}
+            </div>
+            <div class="todo-r">
+                <span class="badge b-${t.priority||'medium'}">${t.priority||'med'}</span>
+                <button class="icon-btn" onclick="delTodo(${t.id})" title="Delete">✕</button>
+            </div>`;
+        list.appendChild(li);
+    });
+}
+
+function fmtDate(iso) { const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+function getTodos()   { return JSON.parse(localStorage.getItem('todos')||'[]'); }
+function saveTodos(v) { localStorage.setItem('todos',JSON.stringify(v)); }
+
+/* ═══════════════════════════════════════════════
+   NOTES
+═══════════════════════════════════════════════ */
+function addNote() {
+    const inp  = document.getElementById('noteInput');
+    const text = inp.value.trim();
+    if (!text) { shake(inp); return; }
+    const notes = getNotes();
+    notes.push({id:Date.now(), text, date:new Date().toLocaleString(), color:noteColor});
+    saveNotes(notes); inp.value = '';
+    updateWC(); renderNotes(); updateStats();
+}
+
+function delNote(id)  { saveNotes(getNotes().filter(n=>n.id!==id)); renderNotes(); updateStats(); }
+
+function pickC(el) {
+    document.querySelectorAll('.cdot').forEach(d=>d.classList.remove('on'));
+    el.classList.add('on'); noteColor = el.dataset.c;
+}
+
+function updateWC() {
+    const t = document.getElementById('noteInput').value.trim();
+    const w = t ? t.split(/\s+/).length : 0;
+    document.getElementById('wc').textContent = `${w} word${w!==1?'s':''} · ${t.length} chars`;
+}
+
+function renderNotes() {
+    const list  = document.getElementById('notesList');
+    const empty = document.getElementById('emptyNotes');
+    const q     = document.getElementById('noteSearch').value.toLowerCase();
+    const all   = getNotes();
+    let notes   = q ? all.filter(n=>n.text.toLowerCase().includes(q)) : all;
+    document.getElementById('noteMeta').textContent = `${all.length} note${all.length!==1?'s':''}`;
+    list.innerHTML = '';
+    empty.style.display = notes.length?'none':'block';
+    notes.slice().reverse().forEach(n => {
+        const li = document.createElement('li');
+        li.className = 'note-item';
+        li.style.borderLeftColor = n.color||'#667eea';
+        li.innerHTML = `
+            <div style="flex:1">
+                <div class="note-txt">${esc(n.text)}</div>
+                <div class="note-date">${n.date}</div>
+            </div>
+            <button class="icon-btn" onclick="delNote(${n.id})" title="Delete">✕</button>`;
+        list.appendChild(li);
+    });
+}
+
+function getNotes()   { return JSON.parse(localStorage.getItem('notes')||'[]'); }
+function saveNotes(v) { localStorage.setItem('notes',JSON.stringify(v)); }
+
+/* ═══════════════════════════════════════════════
+   HABITS
+═══════════════════════════════════════════════ */
+function initHabits() {
+    if (!localStorage.getItem('habits')) {
+        const habits = DEFAULT_HABITS.map((name,i) => ({
+            id: Date.now()+i, name, streak:0,
+            week: Array(7).fill(false), doneToday:false, lastDate:null,
+        }));
+        saveHabits(habits);
+    }
+    syncHabitDay(); renderHabits();
+}
+
+function syncHabitDay() {
+    const habits   = getHabits();
+    const todayStr = new Date().toDateString();
+    let changed    = false;
+    habits.forEach(h => {
+        if (h.lastDate !== todayStr) {
+            if (h.doneToday) h.streak++;
+            else if (h.lastDate) h.streak = 0;
+            h.doneToday = false; h.lastDate = todayStr;
+            if (h.week.length>=7) h.week.shift();
+            h.week.push(false);
+            changed = true;
+        }
+    });
+    if (changed) saveHabits(habits);
+}
+
+function addHabit() {
+    const inp  = document.getElementById('habitInput');
+    const name = inp.value.trim();
+    if (!name) { shake(inp); return; }
+    const habits = getHabits();
+    habits.push({id:Date.now(), name, streak:0, week:Array(7).fill(false), doneToday:false, lastDate:new Date().toDateString()});
+    saveHabits(habits); inp.value = '';
+    renderHabits();
+}
+
+function togHabit(id) {
+    const habits = getHabits(), h = habits.find(x=>x.id===id);
+    if (h) { h.doneToday = !h.doneToday; h.week[h.week.length-1] = h.doneToday; }
+    saveHabits(habits); renderHabits(); updateStats();
+}
+
+function delHabit(id) { saveHabits(getHabits().filter(h=>h.id!==id)); renderHabits(); }
+
+function renderHabits() {
+    const habits = getHabits();
+    const list   = document.getElementById('habitList');
+    const empty  = document.getElementById('emptyHabits');
+    const done   = habits.filter(h=>h.doneToday).length;
+    const best   = habits.length ? Math.max(...habits.map(h=>h.streak)) : 0;
+    list.innerHTML = '';
+    empty.style.display = habits.length?'none':'block';
+    habits.forEach(h => {
+        const div = document.createElement('div');
+        div.className = 'habit-item';
+        div.innerHTML = `
+            <div class="hcbox ${h.doneToday?'on':''}" onclick="togHabit(${h.id})">${h.doneToday?'✓':''}</div>
+            <div class="habit-name ${h.doneToday?'done':''}">${esc(h.name)}</div>
+            <div class="week-dots">${h.week.slice(-7).map(d=>`<div class="wd${d?' on':''}"></div>`).join('')}</div>
+            <span class="streak-b">🔥${h.streak}</span>
+            <button class="icon-btn" onclick="delHabit(${h.id})" title="Delete">✕</button>`;
+        list.appendChild(div);
+    });
+    const pct = habits.length ? Math.round((done/habits.length)*100) : 0;
+    document.getElementById('hpFill').style.width   = pct+'%';
+    document.getElementById('hDoneLbl').textContent = `${done} / ${habits.length} done today`;
+    document.getElementById('hBestLbl').textContent = `Best streak: ${best} 🔥`;
+}
+
+function getHabits()   { return JSON.parse(localStorage.getItem('habits')||'[]'); }
+function saveHabits(v) { localStorage.setItem('habits',JSON.stringify(v)); }
+
+/* ═══════════════════════════════════════════════
+   STATS
+═══════════════════════════════════════════════ */
+function updateStats() {
+    const todos = getTodos(), notes = getNotes();
+    const done  = todos.filter(t=>t.done).length;
+    const total = todos.length;
+    const pct   = total===0 ? 0 : Math.round((done/total)*100);
+    animN('sDone',  done);
+    animN('sTotal', total);
+    animN('sNotes', notes.length);
+    document.getElementById('sProd').textContent    = pct+'%';
+    document.getElementById('progPct').textContent  = pct+'%';
+    document.getElementById('progBar').style.width  = pct+'%';
+}
+
+function animN(id, target) {
+    const el = document.getElementById(id);
+    const cur = parseInt(el.textContent)||0;
+    if (cur===target) return;
+    const step = target>cur?1:-1;
+    let v=cur;
+    const t = setInterval(()=>{ v+=step; el.textContent=v; if(v===target)clearInterval(t); },30);
+}
+
+/* ═══════════════════════════════════════════════
+   MOOD
+═══════════════════════════════════════════════ */
+function setMood(btn) {
+    document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('sel'));
+    btn.classList.add('sel');
+    localStorage.setItem('mood', btn.dataset.m);
+}
+function loadMood() {
+    const m = localStorage.getItem('mood');
+    if (m) document.querySelectorAll('.mood-btn').forEach(b=>{ if(b.dataset.m===m) b.classList.add('sel'); });
+}
+
+/* ═══════════════════════════════════════════════
+   QUOTES
+═══════════════════════════════════════════════ */
+function setQCat(btn) {
+    document.querySelectorAll('.qcat-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active'); qCat=btn.dataset.cat; lastQIdx=-1; nextQuote();
+}
+
+function nextQuote() {
+    const pool = qCat==='all' ? QUOTES : QUOTES.filter(q=>q.c===qCat);
+    if (!pool.length) return;
+    let idx;
+    do { idx=Math.floor(Math.random()*pool.length); } while(idx===lastQIdx && pool.length>1);
+    lastQIdx = idx;
+    const q = pool[idx];
+    const te = document.getElementById('quoteText'), ae = document.getElementById('quoteAuth');
+    te.style.opacity = ae.style.opacity = '0';
+    setTimeout(()=>{
+        te.textContent = `"${q.t}"`;
+        ae.textContent = `— ${q.a}`;
+        te.style.transition = ae.style.transition = 'opacity 0.5s ease';
+        te.style.opacity = ae.style.opacity = '1';
+    }, 200);
+}
+
+/* ═══════════════════════════════════════════════
+   EXPORT
+═══════════════════════════════════════════════ */
+function exportData() {
+    const todos  = getTodos(), notes = getNotes(), habits = getHabits();
+    const name   = document.getElementById('userName').value || 'Friend';
+    let txt = `DASHBOARD EXPORT — ${name}\n${new Date().toLocaleString()}\n${'═'.repeat(50)}\n\n`;
+    txt += `TO-DO LIST (${todos.length} tasks)\n${'─'.repeat(30)}\n`;
+    todos.forEach(t=>{txt+=`[${t.done?'✓':' '}] [${(t.priority||'med').toUpperCase()}] ${t.text}${t.due?` (due ${fmtDate(t.due)})`:''}\n`;});
+    txt += `\nNOTES (${notes.length})\n${'─'.repeat(30)}\n`;
+    notes.forEach(n=>{txt+=`• ${n.text}\n  — ${n.date}\n\n`;});
+    txt += `HABITS\n${'─'.repeat(30)}\n`;
+    habits.forEach(h=>{txt+=`[${h.doneToday?'✓':' '}] ${h.name} (streak: ${h.streak})\n`;});
+    const blob=new Blob([txt],{type:'text/plain'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download=`dashboard-${new Date().toISOString().split('T')[0]}.txt`;
+    a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ═══════════════════════════════════════════════
+   THEME / USER
+═══════════════════════════════════════════════ */
+function toggleDark() {
+    const html=document.documentElement, dark=html.getAttribute('data-theme')==='dark';
+    html.setAttribute('data-theme', dark?'light':'dark');
+    document.getElementById('darkBtn').textContent = dark?'🌙 Dark':'☀️ Light';
+    localStorage.setItem('theme', dark?'light':'dark');
+}
+function loadTheme() {
+    const t=localStorage.getItem('theme')||'light';
+    document.documentElement.setAttribute('data-theme',t);
+    document.getElementById('darkBtn').textContent = t==='dark'?'☀️ Light':'🌙 Dark';
+}
+function loadUserName() {
+    const session=JSON.parse(localStorage.getItem('p_session')||'null');
+    const n=session?.name?.split(' ')[0] || localStorage.getItem('userName');
+    if(n) document.getElementById('userName').value=n;
+}
+function logout() {
+    if(!confirm('Sign out of your dashboard?')) return;
+    localStorage.removeItem('p_session');
+    window.location.href='login.html';
+}
+document.getElementById('userName').addEventListener('input',e=>localStorage.setItem('userName',e.target.value));
+
+function setGreeting() {
+    const h=new Date().getHours();
+    const g = h<5?'Rest well and recharge.':h<12?"Let's have a great day.":h<17?'Keep the momentum going.':h<21?'How was your day?':'Rest well and recharge.';
+    document.getElementById('greeting').textContent = g;
+}
+
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function esc(t) { return t.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
+
+function shake(el) {
+    el.style.animation='none'; void el.offsetHeight;
+    el.style.animation='shake 0.35s ease';
+    el.addEventListener('animationend',()=>el.style.animation='',{once:true});
+}
+
+/* ── Keyboard shortcuts ── */
+document.getElementById('todoInput').addEventListener('keypress',  e=>{ if(e.key==='Enter') addTodo(); });
+document.getElementById('noteInput').addEventListener('keydown',   e=>{ if(e.ctrlKey&&e.key==='Enter') addNote(); });
+document.getElementById('habitInput').addEventListener('keypress', e=>{ if(e.key==='Enter') addHabit(); });
+document.addEventListener('keydown', e=>{ if(e.code==='Space'&&e.target.tagName!=='INPUT'&&e.target.tagName!=='TEXTAREA') { e.preventDefault(); togglePomo(); } });
+</script>
+<nav class="mob-nav">
+    <a href="index2.html" class="mni active">🏠<span>Home</span></a>
+    <a href="social.html" class="mni">🌐<span>Social</span></a>
+    <a href="page2.html" class="mni">⚡<span>More</span></a>
+    <a href="page3.html" class="mni">🏥<span>Health</span></a>
+    <a href="profile.html" class="mni">👤<span>Me</span></a>
+</nav>
+</body>
+</html>
